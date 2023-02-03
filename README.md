@@ -1,0 +1,2 @@
+# guitarscale
+Guitar Scale Generator
