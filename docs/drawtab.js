@@ -1,19 +1,18 @@
-function calcPos(f) {
-    return f * (55 - f / 1.7);
-}
-function calcCenter(f) {
-    return (calcPos(f) + calcPos(f - 1)) / 2;
-}
 function draw(name, major, k, sn, tune, note, chord) {
-    console.log(name);
+    function calcPos(f) {
+        return f * (55 - f / 1.7);
+    }
+    function calcCenter(f) {
+        return (calcPos(f) + calcPos(f - 1)) / 2;
+    }
+    const LEFT = 20;
+    const TOP = 40;
     const noteName = [
         ["T", "2♭", "2", "3♭", "3", "4", "4♯", "5", "6♭", "6", "7♭", "7"],
         ["T", "2♭", "2", "3♭", "3", "4", "5♭", "5", "6♭", "6", "7♭", "7"]
     ];
     const canvas = document.getElementById("canv");
     const ctx = canvas.getContext("2d");
-    const LEFT = 20;
-    const TOP = 40;
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
@@ -105,6 +104,41 @@ const scales = [
     ["Augument", [2, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], false, false],
     ["Augument 7th", [2, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0], false, false],
 ];
+const next = document.getElementById("next");
+const contain = document.getElementById("contain");
+function findNext(key, scale) {
+    next.innerHTML = "";
+    const scaleNote = scales[scale][1];
+    OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+        if (!isScale || idx == scale)
+            continue;
+        let count = 0;
+        for (const [j, n] of scaleNote.entries()) {
+            if ((scaleNote[j] !== 0) != (nextScale[j] !== 0)) {
+                count++;
+                if (count > 2) {
+                    continue OUTER;
+                }
+            }
+        }
+        const row = document.createElement("div");
+        row.innerHTML = key + " " + name;
+        next.appendChild(row);
+    }
+    contain.innerHTML = "";
+    OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+        if (isScale || idx == scale)
+            continue;
+        for (const [j, n] of scaleNote.entries()) {
+            if ((scaleNote[j] === 0) && (nextScale[j] !== 0)) {
+                continue OUTER;
+            }
+        }
+        const row = document.createElement("div");
+        row.innerHTML = key + " " + name;
+        contain.appendChild(row);
+    }
+}
 const scale = document.getElementById("scale");
 function scaleSelection(mode, adv) {
     scale.innerHTML = "";
@@ -147,6 +181,7 @@ function repaint() {
     const sn = parseInt(strings.value);
     const t = parseInt(tune.value);
     const n = note.checked;
+    findNext(keys[k], s);
     draw(keys[k] + " " + scales[s][0], scales[s][1], k, sn, tunes[t][1], n, !scales[s][2]);
 }
 key.onchange = repaint;

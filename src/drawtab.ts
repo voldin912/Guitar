@@ -3,23 +3,24 @@
  2023 Naoki Kishida
  */
 
-function calcPos(f: number): number {
-    return f * (55 - f / 1.7);
-}
-function calcCenter(f:number): number {
-    return (calcPos(f) + calcPos(f - 1)) / 2;
-}
-
 function draw(name: string, major: number[], k: number, sn: number, tune: number[], note: boolean, chord: boolean) {
-    console.log(name);
+    function calcPos(f: number): number {
+        return f * (55 - f / 1.7);
+    }
+    function calcCenter(f:number): number {
+        return (calcPos(f) + calcPos(f - 1)) / 2;
+    }
+
+    const LEFT = 20;
+    const TOP = 40;
+
     const noteName: string[][] = [
         ["T", "2♭","2","3♭","3","4","4♯","5","6♭","6","7♭","7"],
         ["T", "2♭","2","3♭","3","4","5♭","5","6♭","6","7♭","7"]
     ];
+
     const canvas = document.getElementById("canv") as HTMLCanvasElement;
     const ctx = canvas.getContext("2d");
-    const LEFT = 20;
-    const TOP = 40;
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
@@ -115,6 +116,42 @@ const scales: [string, number[], boolean /*scale*/, boolean /*basic*/][] = [
     ["Augument",      [2,0,0,0,1,0,0,0,1,0,0,0], false, false],
     ["Augument 7th",  [2,0,0,0,1,0,0,0,1,0,1,0], false, false],
 ];
+
+const next = document.getElementById("next") as HTMLDivElement;
+const contain = document.getElementById("contain") as HTMLDivElement;
+function findNext(key: string, scale: number) {
+    next.innerHTML = "";
+    const scaleNote = scales[scale][1];
+    OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+        if (!isScale || idx == scale) continue;
+        let count = 0;
+        for (const [j, n] of scaleNote.entries()) {
+            if ((scaleNote[j] !== 0) != (nextScale[j] !== 0)) {
+                count++;
+                if (count > 2) {
+                    continue OUTER;
+                }
+            }
+        }
+        const row = document.createElement("div") as HTMLDivElement;
+        row.innerHTML = key + " " + name;
+        next.appendChild(row);
+    }
+    
+    contain.innerHTML = "";
+    OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+        if (isScale || idx == scale) continue;
+        for (const [j, n] of scaleNote.entries()) {
+            if ((scaleNote[j] === 0) && (nextScale[j] !== 0)) {
+                continue OUTER;
+            }
+        }
+        const row = document.createElement("div") as HTMLDivElement;
+        row.innerHTML = key + " " + name;
+        contain.appendChild(row);
+    }
+}
+
 const scale = document.getElementById("scale") as HTMLSelectElement;
 function scaleSelection(mode: number, adv: boolean) {
     scale.innerHTML = "";
@@ -159,6 +196,7 @@ function repaint() {
     const sn= parseInt(strings.value);
     const t = parseInt(tune.value);
     const n = note.checked;
+    findNext(keys[k], s);
     draw(keys[k] + " " + scales[s][0], scales[s][1], k, sn, tunes[t][1], n, !scales[s][2]);
 }
 
