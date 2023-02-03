@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!--
+ Guitar Scale Generator
+ 2023 Naoki Kishida
+ -->
+<html>
+    <head>
+        <title>Guitar Scale</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>Guitar Scale</h1>
+        
+        <canvas id="canv" width="1200" height="250"></canvas>
+        <div>
+            <label><input type="radio" name="type" id="t0" checked>Scale</label>
+            <label><input type="radio" name="type" id="t1">Chord</label>
+            <label><input type="radio" name="type" id="t2">All</label>
+            <label><input type="checkbox" value="1" id="advanced">Advanced</label>
+        </div>
+        <div>
+            <select id="key"></select>
+            <select id="scale"></select>
+        </div>
+        <div>
+            <select id="strings"></select>
+            <select id="tune"></select>
+            <label><input id="note" type="checkbox" value="1">Note</label>
+        </div>
+        <script src="./drawtab.js"></script>
+    </body>
+</html>
