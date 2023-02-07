@@ -205,7 +205,7 @@ const tunes: [string, number[]][] = [
     ["Regular", [24, 19, 15, 10, 5, 0, -5, -10]],
     ["Drop D",  [24, 19, 15, 10, 5, -2, -7, -12]],
     ["DADGAD",  [22, 17, 15, 10, 5, -2, -7, -9]],
-    ["Bass",    [19, 15, 10, 5, 0, -5, -10, -15]]
+    ["Bass",    [20, 15, 10, 5, 0, -5, -10, -15]]
 ];
 const tune = document.getElementById("tune") as HTMLSelectElement;
 for (const [idx, [val]] of tunes.entries()) {
