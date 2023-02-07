@@ -119,36 +119,60 @@ const scales: [string, number[], boolean /*scale*/, boolean /*basic*/][] = [
 
 const next = document.getElementById("next") as HTMLDivElement;
 const contain = document.getElementById("contain") as HTMLDivElement;
+const scaleHeader = document.getElementById("scale-next") as HTMLHeadElement;
+const chordHeader = document.getElementById("chord-contained") as HTMLHeadElement;
 function findNext(key: string, scale: number) {
     next.innerHTML = "";
+    contain.innerHTML = "";
+
     const scaleNote = scales[scale][1];
-    OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
-        if (!isScale || idx == scale) continue;
-        let count = 0;
-        for (const [j, n] of scaleNote.entries()) {
-            if ((scaleNote[j] !== 0) != (nextScale[j] !== 0)) {
-                count++;
-                if (count > 2) {
+    
+    if (scales[scale][2]) {
+        //scale
+        scaleHeader.textContent = "Scale next to";
+        chordHeader.textContent = "Chord contained";
+        OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+            if (!isScale || idx == scale) continue;
+            let count = 0;
+            for (const [j, n] of scaleNote.entries()) {
+                if ((n !== 0) != (nextScale[j] !== 0)) {
+                    count++;
+                    if (count > 2) {
+                        continue OUTER;
+                    }
+                }
+            }
+            const row = document.createElement("div") as HTMLDivElement;
+            row.innerHTML = key + " " + name;
+            next.appendChild(row);
+        }
+
+        OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+            if (isScale || idx == scale) continue;
+            for (const [j, n] of scaleNote.entries()) {
+                if (n === 0 && nextScale[j] !== 0) {
                     continue OUTER;
                 }
             }
+            const row = document.createElement("div") as HTMLDivElement;
+            row.innerHTML = key + " " + name;
+            contain.appendChild(row);
         }
-        const row = document.createElement("div") as HTMLDivElement;
-        row.innerHTML = key + " " + name;
-        next.appendChild(row);
-    }
-    
-    contain.innerHTML = "";
-    OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
-        if (isScale || idx == scale) continue;
-        for (const [j, n] of scaleNote.entries()) {
-            if ((scaleNote[j] === 0) && (nextScale[j] !== 0)) {
-                continue OUTER;
+    } else {
+        // chord
+        scaleHeader.textContent = "Scale contains";
+        chordHeader.textContent = "";
+        OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+            if (!isScale) continue;
+            for (const [j, n] of scaleNote.entries()) {
+                if (n !== 0 && nextScale[j] === 0) {
+                    continue OUTER;
+                }
             }
+            const row = document.createElement("div") as HTMLDivElement;
+            row.innerHTML = key + " " + name;
+            next.appendChild(row);
         }
-        const row = document.createElement("div") as HTMLDivElement;
-        row.innerHTML = key + " " + name;
-        contain.appendChild(row);
     }
 }
 

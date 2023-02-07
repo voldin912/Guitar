@@ -106,37 +106,59 @@ const scales = [
 ];
 const next = document.getElementById("next");
 const contain = document.getElementById("contain");
+const scaleHeader = document.getElementById("scale-next");
+const chordHeader = document.getElementById("chord-contained");
 function findNext(key, scale) {
     next.innerHTML = "";
+    contain.innerHTML = "";
     const scaleNote = scales[scale][1];
-    OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
-        if (!isScale || idx == scale)
-            continue;
-        let count = 0;
-        for (const [j, n] of scaleNote.entries()) {
-            if ((scaleNote[j] !== 0) != (nextScale[j] !== 0)) {
-                count++;
-                if (count > 2) {
+    if (scales[scale][2]) {
+        scaleHeader.textContent = "Scale next to";
+        chordHeader.textContent = "Chord contained";
+        OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+            if (!isScale || idx == scale)
+                continue;
+            let count = 0;
+            for (const [j, n] of scaleNote.entries()) {
+                if ((n !== 0) != (nextScale[j] !== 0)) {
+                    count++;
+                    if (count > 2) {
+                        continue OUTER;
+                    }
+                }
+            }
+            const row = document.createElement("div");
+            row.innerHTML = key + " " + name;
+            next.appendChild(row);
+        }
+        OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+            if (isScale || idx == scale)
+                continue;
+            for (const [j, n] of scaleNote.entries()) {
+                if (n === 0 && nextScale[j] !== 0) {
                     continue OUTER;
                 }
             }
+            const row = document.createElement("div");
+            row.innerHTML = key + " " + name;
+            contain.appendChild(row);
         }
-        const row = document.createElement("div");
-        row.innerHTML = key + " " + name;
-        next.appendChild(row);
     }
-    contain.innerHTML = "";
-    OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
-        if (isScale || idx == scale)
-            continue;
-        for (const [j, n] of scaleNote.entries()) {
-            if ((scaleNote[j] === 0) && (nextScale[j] !== 0)) {
-                continue OUTER;
+    else {
+        scaleHeader.textContent = "Scale contains";
+        chordHeader.textContent = "";
+        OUTER: for (const [idx, [name, nextScale, isScale]] of scales.entries()) {
+            if (!isScale)
+                continue;
+            for (const [j, n] of scaleNote.entries()) {
+                if (n !== 0 && nextScale[j] === 0) {
+                    continue OUTER;
+                }
             }
+            const row = document.createElement("div");
+            row.innerHTML = key + " " + name;
+            next.appendChild(row);
         }
-        const row = document.createElement("div");
-        row.innerHTML = key + " " + name;
-        contain.appendChild(row);
     }
 }
 const scale = document.getElementById("scale");
