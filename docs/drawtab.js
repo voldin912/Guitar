@@ -35,18 +35,19 @@ function draw(name, major, k, sn, tune, note, chord) {
         ctx.fillText(p.toString(), calcCenter(p) + LEFT - 5, TOP + (sn - 1) * 20 + 30);
     }
     const offset = 4 + 24 - k;
-    for (let str = 0; str < sn; str++) {
+    for (let i = 0; i < sn; i++) {
+        const str = i + (sn < 6 ? 1 : 0);
         for (let pos = 1; pos <= 24; pos++) {
             const noteNum = (tune[str] + pos + offset) % 12;
             const flag = major[noteNum];
             if (flag == 0)
                 continue;
             if (note) {
-                ctx.fillText(noteName[chord ? 1 : 0][noteNum], calcCenter(pos) + LEFT - 3, TOP + 5 + str * 20);
+                ctx.fillText(noteName[chord ? 1 : 0][noteNum], calcCenter(pos) + LEFT - 3, TOP + 5 + i * 20);
             }
             else {
                 ctx.beginPath();
-                ctx.arc(calcCenter(pos) + LEFT, TOP + str * 20, 7, 0, Math.PI * 2, true);
+                ctx.arc(calcCenter(pos) + LEFT, TOP + i * 20, 7, 0, Math.PI * 2, true);
                 switch (flag) {
                     case 1:
                         ctx.fillStyle = "black";
@@ -178,16 +179,18 @@ function scaleSelection(mode, adv) {
     }
 }
 const strings = document.getElementById("strings");
-for (let i = 6; i <= 8; i++) {
+for (let i = 4; i <= 8; i++) {
     const opt = document.createElement("option");
     opt.value = i.toString();
     opt.text = i + " strings";
     strings.appendChild(opt);
 }
+strings.selectedIndex = 2;
 const tunes = [
     ["Regular", [24, 19, 15, 10, 5, 0, -5, -10]],
     ["Drop D", [24, 19, 15, 10, 5, -2, -7, -12]],
     ["DADGAD", [22, 17, 15, 10, 5, -2, -7, -9]],
+    ["Bass", [19, 15, 10, 5, 0, -5, -10, -15]]
 ];
 const tune = document.getElementById("tune");
 for (const [idx, [val]] of tunes.entries()) {
