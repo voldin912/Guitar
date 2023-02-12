@@ -3,7 +3,8 @@
  2023 Naoki Kishida
  */
 
-function draw(name: string, major: number[], k: number, sn: number, tune: number[], note: boolean, chord: boolean) {
+function draw(name: string, notes: number[], k: number,
+        stringCount: number, tune: number[], note: boolean, chord: boolean) {
     function calcPos(f: number): number {
         return f * (55 - f / 1.7);
     }
@@ -24,13 +25,13 @@ function draw(name: string, major: number[], k: number, sn: number, tune: number
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
-    for (let i = 0; i < sn; i++) {
+    for (let i = 0; i < stringCount; i++) {
         ctx.moveTo(LEFT, TOP + i * 20);
         ctx.lineTo(LEFT + calcPos(24), TOP + i * 20);
     }
     for (let i = 0; i <= 24; i++) {
         ctx.moveTo(LEFT + calcPos(i), TOP + 0 * 20);
-        ctx.lineTo(LEFT + calcPos(i), TOP + (sn - 1) * 20);
+        ctx.lineTo(LEFT + calcPos(i), TOP + (stringCount - 1) * 20);
     }
     ctx.closePath();
     ctx.stroke();
@@ -42,15 +43,15 @@ function draw(name: string, major: number[], k: number, sn: number, tune: number
     const marks: number[] = [3, 5, 7, 9, 12, 15, 17, 19, 21];
     ctx.font = "13pt Arial";
     for (let p of marks) {
-        ctx.fillText(p.toString(), calcCenter(p) + LEFT - 5, TOP + (sn - 1) * 20 + 30);
+        ctx.fillText(p.toString(), calcCenter(p) + LEFT - 5, TOP + (stringCount - 1) * 20 + 30);
     }
 
     const offset = 4 + 24 - k; // E
-    for (let i = 0; i < sn; i++) {
-        const str = i + (sn < 6 ? 1 : 0);
+    for (let i = 0; i < stringCount; i++) {
+        const str = i + (stringCount < 6 ? 1 : 0);
         for (let pos = 1; pos <= 24; pos++) {
             const noteNum = (tune[str] + pos + offset) % 12;
-            const flag = major[noteNum];
+            const flag = notes[noteNum];
             if (flag == 0) continue;
             if (note) {
                 ctx.fillText(noteName[chord ? 1 : 0][noteNum], calcCenter(pos) + LEFT - 3, TOP+ 5 + i * 20);
@@ -216,6 +217,60 @@ for (const [idx, [val]] of tunes.entries()) {
 }
 
 const note = document.getElementById("note") as HTMLInputElement;
+const keyboard = document.getElementById("keyb") as HTMLCanvasElement;
+
+function drawKey(notes: number[], k: number) {
+    const ctx = keyboard.getContext("2d");
+    const width = keyboard.width;
+    const height = keyboard.height;
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, width, height);
+    
+    const keys = 14;
+    const keyWidth = width / keys;
+    const offset = 3;
+
+    const keyMap = [0, 1, 2, 3, 4, -1, 5, 6, 7, 8, 9, 10, 11, -1];
+    // draw white keys
+    ctx.fillStyle = "white";
+    for (let i = 0; i < keys; i++) {
+      ctx.fillRect(i * keyWidth + 1, 0, keyWidth - 2, height - 2);
+    }
+    // draw black keys
+    ctx.fillStyle = "black";
+    const gap = 5;
+    for (let i = 0; i < keys; i++) {
+        if (((i + offset) % 7) == 2 || ((i + offset) % 7) == 6) continue;
+      ctx.fillRect(i * keyWidth + keyWidth / 2 + gap, 0, keyWidth - 2 - gap * 2, height *2 / 3);
+    }
+    
+    for (let i = 0; i < keys * 2; ++i) {
+        const m = keyMap[(i + offset * 2) % 14];
+        if (m < 0) continue;
+        const n = notes[(m + 12 - k) % 12];
+        if (n === 0) continue;
+        const root = n === 2;
+        const blue = n === 3;
+        const white = i % 2 === 0;
+        ctx.beginPath();
+        ctx.arc((i + 1) * keyWidth / 2, height / 2 + (white ? height / 3 : 0), 7, 0, Math.PI * 2, true);
+        ctx.lineWidth = 2;
+        if (blue) {
+            ctx.fillStyle = "blue";
+            ctx.strokeStyle = "none";
+        } else if (root) {
+            ctx.fillStyle = "white";
+            ctx.strokeStyle = "black";
+        } else {
+            ctx.fillStyle = "black";
+            ctx.strokeStyle = "white";
+        }
+        ctx.fill();
+        if (root == white) {
+            ctx.stroke();
+        }
+    }
+}
 
 function repaint() {
     const k = parseInt(key.value);
@@ -225,6 +280,7 @@ function repaint() {
     const n = note.checked;
     findNext(keys[k], s);
     draw(keys[k] + " " + scales[s][0], scales[s][1], k, sn, tunes[t][1], n, !scales[s][2]);
+    drawKey(scales[s][1], k);
 }
 
 key.onchange = repaint;
